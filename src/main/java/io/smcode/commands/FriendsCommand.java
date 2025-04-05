@@ -1,6 +1,7 @@
 package io.smcode.commands;
 
-import io.smcode.commands.arguments.FriendAddArgument;
+import io.smcode.FriendManager;
+import io.smcode.commands.arguments.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,17 +12,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FriendsCommand implements CommandExecutor {
-    private static final String helpFormat = "<blue>%s</blue> <gray>- %s</gray>";
+    private static final String helpFormat = "<blue>/friend %s</blue> <gray>- %s</gray>";
     private static final Map<String, ArgumentExecutor> arguments = new HashMap<>();
 
-    private static final Map<String, String> commandArgs = Map.of(
-            "remove <player>", "Remove a player from your friend list",
-            "accept <player>", "Accept a friend request",
-            "list", "Show all friends"
-    );
-
-    public FriendsCommand() {
-        arguments.put("add", new FriendAddArgument());
+    public FriendsCommand(FriendManager manager) {
+        arguments.put("add", new FriendAddArgument(manager));
+        arguments.put("remove", new FriendRemoveArgument(manager));
+        arguments.put("requests", new FriendRequestsArgument(manager));
+        arguments.put("accept", new FriendAcceptArgument(manager));
+        arguments.put("list", new FriendListArgument());
     }
 
     @Override
@@ -51,8 +50,8 @@ public class FriendsCommand implements CommandExecutor {
     }
 
     private static void sendHelp(Player player) {
-        for (String argument : arguments.keySet()) {
-            player.sendRichMessage(helpFormat.formatted(argument, arguments.get(argument).getDescription()));
+        for (ArgumentExecutor argument : arguments.values()) {
+            player.sendRichMessage(helpFormat.formatted(argument.getUsage(), argument.getDescription()));
         }
     }
 }
